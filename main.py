@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from connectors.firestore_connector import get_mishna
+from connectors.firestore_connector import FirestoreConnector
 
 app = FastAPI()
 
@@ -15,13 +15,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-class Item(BaseModel):
-    name: str
-    description: str
-    model: str
-    isBlack: bool
+class MishnaRequest(BaseModel):
+    chapter: str
+    mishna: str
 
-get_mishna("ב","א")
+# get_mishna("ב","א")
 
 # ~~~~~~~~~~~~~~~ Routs ~~~~~~~~~~~~~~~
 # Health check route
@@ -30,5 +28,5 @@ async def health_check():
     return "Pirkey Avot Project Server is ready!"
     
 @app.post("/getmishna/")
-async def get_mishna(chapter: str, mishna: str, tags: str):
-    return get_mishna(chapter,mishna, tags)
+async def get_mishna(request_data: MishnaRequest):
+    return FirestoreConnector().get_mishna(request_data.chapter, request_data.mishna)
