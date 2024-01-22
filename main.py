@@ -18,8 +18,7 @@ app.add_middleware(
 class MishnaRequest(BaseModel):
     chapter: str
     mishna: str
-
-# get_mishna("ב","א")
+    
 
 # ~~~~~~~~~~~~~~~ Routs ~~~~~~~~~~~~~~~
 # Health check route
