@@ -3,41 +3,51 @@ from google.cloud import firestore
 from google.cloud.firestore_v1.base_query import FieldFilter
 
 class FirestoreConnector:
+
+    COLLECTION_PATH = "pirkey_avot"
+
     def __init__(self):
-        # Set the path to your service account key file
-        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "firestore_key\serviceAccountKey.json"
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "firestore_key\serviceAccountKey.json" # Set the path to service account key file
+        self.db = firestore.Client() # Initialize Firestore client
+        self.collection_ref = self.db.collection(self.COLLECTION_PATH) # Get Collection
 
-        # Initialize Firestore client
-        self.db = firestore.Client()
 
-        # Specify the collection or path
-        self.collection_path = "pirkey_avot"
+    def __execute_query(self, query) -> dict:
+        print(f"executing query: {query}")
+        documents = query.stream()
+        documents_list = list(documents)
+        print(f"results: {documents_list}")
+        return {"results_number": len(documents_list), "results_data": [doc.to_dict() for doc in documents_list]}
+
 
     def get_mishna(self, chapter: str, mishna: str):
-        results = []  # To store the document data
-
         try:
-            collection_ref = self.db.collection(self.collection_path)
-
-            # Prepare query
+            # Making Query
             query = (
-                collection_ref
+                self.collection_ref
                 .where(filter=FieldFilter('chapter', '==', chapter))
                 .where(filter=FieldFilter('mishna', '==', mishna))
             )
-
-            # Get documents from the query
-            documents = query.stream()
-            
-            # Check if there are any documents
-            if documents:
-                for doc in documents:
-                    results.append(doc.to_dict())
-                    print(f'{doc.id} => {doc.to_dict()}')
-            else:
-                print(f"No documents found with the specified conditions.")
-
+            return self.__execute_query(query=query)
         except Exception as e:
             print(f"An error occurred: {e}")
+    
 
-        return results
+    def get_mishna_by_tags(self, tags):
+        try:
+            # Making Query
+            query = (
+                self.collection_ref
+                .where(filter=FieldFilter('tags', 'array_contains_any', tags))
+            )
+            return self.__execute_query(query=query)
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            
+    def get_mishna_by_text(self, text):
+        try:
+            documents_list = list(self.collection_ref.stream()) # Get all data
+            matching_documents = [doc.to_dict() for doc in documents_list if text in doc.to_dict().get("text", "")]
+            return {"results_number": len(matching_documents), "results_data": matching_documents}
+        except Exception as e:
+            print(f"An error occurred: {e}")

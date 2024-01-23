@@ -18,7 +18,9 @@ app.add_middleware(
 class MishnaRequest(BaseModel):
     chapter: str
     mishna: str
-    
+    tags: list[str]
+    text: str
+
 
 # ~~~~~~~~~~~~~~~ Routs ~~~~~~~~~~~~~~~
 # Health check route
@@ -29,3 +31,11 @@ async def health_check():
 @app.post("/getmishna/")
 async def get_mishna(request_data: MishnaRequest):
     return FirestoreConnector().get_mishna(request_data.chapter, request_data.mishna)
+
+@app.post("/getmishna/tags/")
+async def get_mishna_by_tags(request_data: MishnaRequest):
+    return FirestoreConnector().get_mishna_by_tags(request_data.tags)
+
+@app.post("/getmishna/text/")
+async def get_mishna_by_tags(request_data: MishnaRequest):
+    return FirestoreConnector().get_mishna_by_text(request_data.text)
