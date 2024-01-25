@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
 from models.mishna import Mishna
 
 from connectors.firestore_connector import FirestoreConnector
